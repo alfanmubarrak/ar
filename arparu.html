@@ -1,28 +1,103 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
+    <title>AR Paru-paru 3D</title>
+
+    <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+
+    <!-- AR.js -->
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+
+    <!-- Komponen drag untuk rotasi -->
+    <script>
+        AFRAME.registerComponent('drag-rotate', {
+            init: function () {
+                this.dragging = false;
+                this.previousX = 0;
+
+                this.el.sceneEl.canvas.addEventListener('mousedown', (e) => {
+                    this.dragging = true;
+                    this.previousX = e.clientX;
+                });
+
+                window.addEventListener('mouseup', () => {
+                    this.dragging = false;
+                });
+
+                window.addEventListener('mousemove', (e) => {
+                    if (!this.dragging) return;
+
+                    let rot = this.el.getAttribute('rotation');
+                    let dx = e.clientX - this.previousX;
+
+                    this.el.setAttribute('rotation', {
+                        x: rot.x,
+                        y: rot.y + dx * 0.5,
+                        z: rot.z
+                    });
+
+                    this.previousX = e.clientX;
+                });
+            }
+        });
+
+        // Geser dengan tombol panah
+        window.addEventListener("keydown", function (e) {
+            const model = document.querySelector("#model");
+            if (!model) return;
+
+            let pos = model.getAttribute("position");
+
+            switch (e.key) {
+                case "ArrowLeft":
+                    pos.x -= 0.1;
+                    break;
+                case "ArrowRight":
+                    pos.x += 0.1;
+                    break;
+                case "ArrowUp":
+                    pos.z -= 0.1;
+                    break;
+                case "ArrowDown":
+                    pos.z += 0.1;
+                    break;
+            }
+
+            model.setAttribute("position", pos);
+        });
+    </script>
 </head>
 
 <body style="margin:0; overflow:hidden;">
-    <a-scene embedded arjs>
 
-        <a-assets>
-            <a-asset-item id="paruModel" src="paru.glb"></a-asset-item>
-        </a-assets>
+<a-scene embedded arjs>
 
-        <a-marker type="pattern" url="pattern-paruparu.patt">
-            <a-entity
-                gltf-model="#paruModel"
-                position="0 0 0"
-                scale="4 4 4">
-            </a-entity>
-        </a-marker>
+    <a-assets>
+        <a-asset-item id="paruModel" src="paru.glb"></a-asset-item>
+    </a-assets>
 
-        <a-entity camera></a-entity>
+    <!-- Marker -->
+    <a-marker type="pattern" url="pattern-paruparu.patt">
 
-    </a-scene>
+        <!-- Model Paru -->
+        <a-entity
+            id="model"
+            gltf-model="#paruModel"
+            position="0 0 0"
+            rotation="0 0 0"
+            scale="4 4 4"
+            drag-rotate
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 10000">
+        </a-entity>
+
+    </a-marker>
+
+    <!-- Kamera -->
+    <a-entity camera></a-entity>
+
+</a-scene>
+
 </body>
 </html>
